@@ -1,0 +1,19 @@
+<!doctype html>
+<html lang="pt-BR"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Plataforma 2D – Floresta</title>
+<style>html,body{margin:0;height:100%;background:#a8e6a1;color:#fff;font:16px Arial,sans-serif}
+#m{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}</style>
+</head><body><div id="m">Carregando Plataforma 2D – Floresta…</div>
+<script>
+(function(){
+  var T = {"platform":"web","license":"nenhuma"}, SEQ = 1791497446864;
+  fetch('jogo.html?v=' + SEQ, { cache: 'no-store' }).then(function(r){ if (!r.ok) throw 0; return r.text(); }).then(function(html){
+    var inj = '<script>window.FORJA_TARGET=' + JSON.stringify(T).replace(/</g, '\\u003c') + ';<\/script>';
+    html = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, function(h){ return h + inj; }) : inj + html;
+    document.open(); document.write(html); document.close();
+  }).catch(function(){ document.getElementById('m').textContent = 'Não foi possível carregar o jogo. Verifique a internet e atualize a página.'; });
+})();
+</script>
+<p style="position:fixed;bottom:6px;width:100%;text-align:center;margin:0;font-size:12px;opacity:.7"><a href="politica.html" style="color:#fff">Política de Privacidade</a></p>
+</body></html>
