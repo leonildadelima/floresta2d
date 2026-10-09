@@ -8,7 +8,7 @@
 </head><body><div id="m">Carregando ZAIROX…</div>
 <script>
 (function(){
-  var T = {"platform":"web","license":"nenhuma"}, SEQ = 1791522812117;
+  var T = {"platform":"web","license":"nenhuma"}, SEQ = 1791527487634;
   fetch('jogo.html?v=' + SEQ, { cache: 'no-store' }).then(function(r){ if (!r.ok) throw 0; return r.text(); }).then(function(html){
     var inj = '<script>window.FORJA_TARGET=' + JSON.stringify(T).replace(/</g, '\\u003c') + ';<\/script>';
     html = /<head[^>]*>/i.test(html) ? html.replace(/<head[^>]*>/i, function(h){ return h + inj; }) : inj + html;
