@@ -1,15 +1,18 @@
 <!DOCTYPE html>
 <html lang="pt-BR">
 <head>
+<link rel="manifest" href="manifest.json"><link rel="icon" type="image/svg+xml" href="icon.svg"><link rel="apple-touch-icon" href="icon.svg"><meta name="application-name" content="ZAIROX"><meta name="apple-mobile-web-app-title" content="ZAIROX">
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="theme-color" content="#a8e6a1">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
-<title>Plataforma 2D – Floresta</title>
+<title>ZAIROX</title>
 <style>
 html,body{margin:0;height:100%;overflow:hidden;background:#000;touch-action:none;user-select:none;-webkit-user-select:none;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif}
-#game{position:fixed;inset:0;display:flex;align-items:center;justify-content:center}
+#game{position:fixed;inset:0;display:flex;align-items:center;justify-content:center;isolation:isolate;overflow:hidden}
+/* Tela inteira: as sobras ao lado da área de jogo (telas mais largas que o jogo) mostram a arte do cenário desfocada */
+#game::before{content:"";position:absolute;inset:-30px;z-index:-1;background:var(--fill,none) center/cover;filter:blur(16px) brightness(.8) saturate(1.1)}
 #game canvas{display:block}
 #hud{position:fixed;top:0;left:0;right:0;display:flex;gap:16px;justify-content:space-between;padding:10px 14px;padding-top:max(10px,env(safe-area-inset-top));color:#fff;font-weight:700;font-size:16px;text-shadow:0 2px 4px rgba(0,0,0,.7);pointer-events:none;z-index:2}
 #hud-lives{color:#ff5a6e;letter-spacing:2px}
@@ -148,69 +151,62 @@ body.titling #touch,body.titling #hud,body.titling #hint{display:none!important}
   background:linear-gradient(180deg,#58e866,#1f9f36);box-shadow:inset 0 2px 0 rgba(255,255,255,.45),0 4px 0 #0f5f1c}
 @media (max-width:520px){.ss-body{gap:5px;padding:5px}.ss-grid{gap:5px}.l-tall{grid-template-columns:repeat(2,minmax(0,1fr))}.l-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.l-big{grid-template-columns:repeat(2,minmax(0,1fr))}
   .shop-tab .st-lbl{display:none}.shop-tab .st-ico{width:30px;height:30px}.shop-tab .st-ico img{width:30px;height:30px}}
-/* Painel lateral da partida (substitui a faixa preta do letterbox) */
-:root{--side-w:clamp(178px,19vw,238px);--side-h:62px}
-/* Visual de Passe de Temporada: roxo vibrante, molduras douradas, sombras marcantes */
-#side{position:fixed;left:0;top:0;bottom:0;width:var(--side-w);box-sizing:border-box;z-index:3;display:flex;flex-direction:column;gap:11px;padding:16px 13px 14px;padding-top:max(16px,env(safe-area-inset-top));padding-left:max(13px,env(safe-area-inset-left));color:#fff;
-  font-family:"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;overflow:hidden;
-  background:radial-gradient(circle at 30% 0%,rgba(255,255,255,.22),rgba(255,255,255,0) 45%),
-    repeating-linear-gradient(135deg,rgba(255,255,255,.045) 0 14px,rgba(255,255,255,0) 14px 28px),
-    linear-gradient(180deg,#8b4dff 0%,#6a2ee6 42%,#45179e 100%);
-  border-right:4px solid #ffcc3d;border-radius:0 24px 24px 0;box-shadow:inset -3px 0 0 #fff2b0,6px 0 0 #2a0b6e,12px 0 30px rgba(0,0,0,.4)}
-body.has-side{background:#1c0b45}
-body.has-side #game{left:var(--side-w);background:radial-gradient(circle at 60% 40%,var(--sky-soft),#1c0b45 80%)}
-body.has-side #hud{display:none}
-body.has-side #banner{left:var(--side-w)}
-body.has-side #gtoast,body.has-side #hint{left:calc(50% + var(--side-w) / 2)}
-body.has-side #touch{left:var(--side-w)}
-body.titling #side{display:none!important}
-.sd-label{display:block;font-size:10px;font-weight:900;letter-spacing:1.3px;text-transform:uppercase;color:#ffe9a8;text-shadow:0 1px 0 #2a0b6e;margin-bottom:2px}
-/* Selo dourado da fase */
-.sd-phase{display:flex;align-items:center;justify-content:center;gap:8px;padding:6px 10px;border-radius:999px;
-  background:linear-gradient(180deg,#ffe57a,#ffb300);border:3px solid #fff3c4;box-shadow:0 4px 0 #9a5d00,0 8px 16px rgba(0,0,0,.3)}
-.sd-phase .sd-label{margin:0;color:#5a2a00;text-shadow:none;font-size:12px}
-.sd-phase b{font-size:30px;font-weight:900;line-height:1;color:#fff;text-shadow:0 3px 0 #b36b00,0 0 2px #7a3e00,-1px -1px 0 #7a3e00,1px 1px 0 #7a3e00}
-/* Progresso da fase: verde listrado */
-.sd-bar{height:12px;border-radius:99px;background:rgba(20,6,60,.55);border:2px solid #2a0b6e;box-shadow:inset 0 2px 3px rgba(0,0,0,.4);overflow:hidden}
-.sd-bar i{display:block;height:100%;width:0;border-radius:inherit;transition:width .25s linear;
-  background:repeating-linear-gradient(135deg,rgba(255,255,255,.28) 0 6px,rgba(255,255,255,0) 6px 12px),linear-gradient(180deg,#8dff9a,#22c55e)}
-/* Cartões com moldura dourada e sombra marcante: Vidas, Moedas, Gemas */
-.sd-card{display:flex;align-items:center;gap:10px;border-radius:16px;padding:8px 10px;
-  background:linear-gradient(180deg,#5b26c9,#341184);border:3px solid #ffcc3d;
-  box-shadow:inset 0 0 0 2px rgba(255,240,170,.35),inset 0 10px 14px rgba(255,255,255,.08),0 5px 0 #1d0a4d,0 9px 18px rgba(0,0,0,.35)}
-.sd-card .ico{flex:none;display:grid;place-items:center;width:38px;height:38px;border-radius:50%;font-size:21px;
-  background:radial-gradient(circle at 35% 30%,#fff6c2,#ffc21a 55%,#c27c00);border:2px solid #fff3c4;box-shadow:0 3px 0 #7a4a00}
-.sd-card > div{min-width:0}
-.sd-card b{display:block;font-size:24px;font-weight:900;line-height:1.05;color:#fff;font-variant-numeric:tabular-nums;
-  text-shadow:0 2px 0 #2a0b6e,-1px -1px 0 #2a0b6e,1px -1px 0 #2a0b6e,-1px 1px 0 #2a0b6e}
-.sd-card b.bump{animation:sdbump .3s ease-out}
-.sd-card.life .ico{background:radial-gradient(circle at 35% 30%,#ffd1dc,#ff4d6d 55%,#b0132f);box-shadow:0 3px 0 #6b0a1c}
-.sd-card.gem .ico{background:radial-gradient(circle at 35% 30%,#f0dcff,#b366ff 55%,#6a1fc0);box-shadow:0 3px 0 #3d0d78}
-.sd-card.gem b{color:#e9d4ff}
-.sd-wallet{display:grid;gap:10px}
-.sd-lives{display:flex;flex-wrap:wrap;gap:2px;align-items:center;min-height:24px}
-.sd-lives .hp{font-size:19px;color:#ff4d6d;text-shadow:0 2px 0 #6b0a1c,0 0 8px rgba(255,77,109,.6)}
-.sd-lives .hp-more{font-size:14px;font-weight:900;color:#ffd1dc;margin-left:2px}
+/* Barra superior transparente da partida: avatar + nome (editável) + vidas/moedas/gemas · fase · loja e engrenagem */
+#topbar{position:fixed;left:0;right:0;top:0;z-index:3;display:grid;grid-template-columns:minmax(0,1fr) auto minmax(0,1fr);align-items:start;gap:8px;
+  padding:8px 12px 14px;padding-top:max(8px,env(safe-area-inset-top));padding-left:max(12px,env(safe-area-inset-left));padding-right:max(12px,env(safe-area-inset-right));
+  color:#fff;font-family:"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;pointer-events:none;
+  background:linear-gradient(180deg,rgba(0,0,0,.26),rgba(0,0,0,0));text-shadow:0 2px 0 rgba(0,0,0,.45),0 0 6px rgba(0,0,0,.35)}
+#topbar button,#topbar input{pointer-events:auto}
+body.titling #topbar,body.titling #sd-inv-wrap{display:none!important}
+body.has-top #hud{display:none}
+.tb-left{display:flex;align-items:flex-start;gap:8px;min-width:0}
+.tb-avatar{flex:none;width:46px;height:46px;border-radius:50%;overflow:hidden;background:rgba(255,255,255,.16);border:2px solid rgba(255,255,255,.8);box-shadow:0 3px 8px rgba(0,0,0,.35);display:grid;place-items:center}
+.tb-avatar img{width:100%;height:100%;object-fit:cover;object-position:50% 12%}
+.tb-who{min-width:0;display:flex;flex-direction:column;gap:3px}
+.tb-namerow{display:flex;align-items:center;gap:5px;min-width:0}
+.tb-name{font-size:16px;font-weight:900;letter-spacing:1px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px}
+.tb-name-in{width:150px;font:900 15px "Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;padding:2px 7px;border-radius:8px;border:2px solid #ffd54f;background:rgba(0,0,0,.6);color:#fff;outline:none;user-select:text;-webkit-user-select:text}
+.tb-edit{flex:none;border:0;background:rgba(255,255,255,.16);border-radius:50%;width:24px;height:24px;padding:0;font-size:12px;line-height:1;cursor:pointer}
+.tb-edit:hover{background:rgba(255,255,255,.32)}
+.tb-stats{display:flex;gap:6px;flex-wrap:wrap}
+.tb-st{display:inline-flex;align-items:center;gap:4px;padding:2px 9px 2px 6px;border-radius:999px;background:rgba(0,0,0,.28);border:1px solid rgba(255,255,255,.22);font-size:13px}
+.tb-st b{font-size:15px;font-weight:900;font-variant-numeric:tabular-nums}
+.tb-st b.bump{animation:sdbump .3s ease-out}
+.tb-st.gem b{color:#ecd8ff}
 .sd-lives.hurt{animation:sdhurt .45s}
-.sd-level{font-size:12px;font-weight:800;color:#e6d8ff;text-shadow:0 1px 0 #2a0b6e}
-.sd-powers{display:flex;flex-wrap:wrap;gap:6px}
-.sd-pw{font-size:12px;font-weight:900;padding:3px 9px;border-radius:99px;background:linear-gradient(180deg,#7a45f0,#4a1aa8);border:2px solid #ffcc3d;box-shadow:0 2px 0 #1d0a4d}
-/* Botão da loja: dourado, grosso e "apertável" */
-.sd-shop{margin-top:auto;display:flex;align-items:center;justify-content:center;gap:8px;width:100%;border:3px solid #fff3bf;border-radius:16px;padding:11px 10px;cursor:pointer;
-  font:900 17px "Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;letter-spacing:.5px;text-transform:uppercase;color:#4a1a00;
-  background:linear-gradient(180deg,#ffe866,#ffb000);box-shadow:0 6px 0 #a35b00,0 10px 20px rgba(0,0,0,.35);transition:transform .1s,box-shadow .1s,filter .1s}
-.sd-shop:hover{filter:brightness(1.07)}
-.sd-shop:active{transform:translateY(4px);box-shadow:0 2px 0 #a35b00,0 4px 10px rgba(0,0,0,.35)}
-.sd-shop kbd{font:900 11px system-ui,sans-serif;background:rgba(74,26,0,.15);border-radius:6px;padding:1px 6px}
-/* Inventário de consumíveis no painel: toque/clique ou teclas 1–5 ativam */
-.sd-inv{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:5px}
-.sd-it{position:relative;display:grid;place-items:center;aspect-ratio:1;border-radius:11px;border:2px solid #ffcc3d;background:linear-gradient(180deg,#5b26c9,#341184);box-shadow:0 3px 0 #1d0a4d;cursor:pointer;padding:0;color:#fff;font-size:18px;overflow:hidden}
+.sd-powers{display:flex;flex-wrap:wrap;gap:4px}
+.sd-pw{font-size:11px;font-weight:900;padding:1px 7px;border-radius:99px;background:rgba(0,0,0,.3);border:1px solid rgba(255,255,255,.25)}
+.tb-center{display:flex;flex-direction:column;align-items:center;gap:4px;padding-top:4px}
+.tb-phase{font-size:11px;font-weight:900;letter-spacing:2px;padding:3px 12px;border-radius:999px;background:rgba(0,0,0,.22);border:1px solid rgba(255,255,255,.2);opacity:.9;white-space:nowrap}
+.tb-phase b{font-size:15px;letter-spacing:0}
+.tb-bar{width:110px;height:4px;border-radius:9px;background:rgba(255,255,255,.2);overflow:hidden}
+.tb-bar i{display:block;height:100%;width:0;background:#8dff9a;transition:width .25s linear}
+.tb-right{display:flex;justify-content:flex-end;gap:8px}
+.tb-round{width:46px;height:46px;border-radius:50%;border:2px solid rgba(255,255,255,.75);background:rgba(0,0,0,.25);color:#fff;font-size:21px;line-height:1;cursor:pointer;display:grid;place-items:center;padding:0;box-shadow:0 3px 8px rgba(0,0,0,.3);transition:transform .1s,background .1s}
+.tb-round:hover{background:rgba(255,255,255,.2)}
+.tb-round:active{transform:scale(.92)}
+.tb-shop{background:rgba(255,196,40,.35);border-color:#ffe082}
+/* Inventário (teclas 1–5 ou toque) embaixo, no centro, entre os controles */
+#sd-inv-wrap{position:fixed;left:50%;bottom:max(12px,env(safe-area-inset-bottom));transform:translateX(-50%);z-index:3}
+.sd-inv{display:flex;gap:6px}
+.sd-it{position:relative;display:grid;place-items:center;width:46px;height:46px;border-radius:12px;border:2px solid rgba(255,255,255,.55);background:rgba(0,0,0,.28);cursor:pointer;padding:0;color:#fff;font-size:18px;overflow:hidden}
 .sd-it img{width:70%;height:70%;object-fit:contain;pointer-events:none}
-.sd-it b{position:absolute;right:2px;bottom:0;font:900 10px system-ui,sans-serif;text-shadow:0 1px 2px #000}
-.sd-it i{position:absolute;left:3px;top:0;font:900 9px system-ui,sans-serif;font-style:normal;color:#ffe9a8}
+.sd-it b{position:absolute;right:3px;bottom:1px;font:900 10px system-ui,sans-serif;text-shadow:0 1px 2px #000}
+.sd-it i{position:absolute;left:4px;top:1px;font:900 9px system-ui,sans-serif;font-style:normal;color:#ffe9a8}
 .sd-it.empty{opacity:.4;cursor:default;filter:grayscale(.6)}
-.sd-it.on{border-color:#7dff8a;box-shadow:0 0 12px rgba(125,255,138,.8),0 3px 0 #1d0a4d;background:linear-gradient(180deg,#2bb35a,#156b35)}
+.sd-it.on{border-color:#7dff8a;box-shadow:0 0 12px rgba(125,255,138,.8);background:rgba(43,179,90,.45)}
 .sd-it .t{position:absolute;left:0;bottom:0;height:3px;background:#7dff8a}
+/* Painel da engrenagem: pausa, áudio e conta */
+#settings{position:fixed;inset:0;z-index:8;display:grid;place-items:center;background:rgba(3,8,22,.6)}
+.set-box{position:relative;width:min(340px,90vw);padding:22px 18px 16px;border-radius:20px;color:#fff;background:rgba(12,20,45,.94);border:2px solid rgba(255,255,255,.25);box-shadow:0 20px 50px rgba(0,0,0,.55);font-family:"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif}
+.set-box h2{margin:0 0 14px;text-align:center;font:900 24px "Arial Black",system-ui,sans-serif}
+.set-row{display:flex;justify-content:space-between;align-items:center;width:100%;margin:0 0 8px;padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,.18);background:rgba(255,255,255,.06);color:#fff;font:800 16px system-ui,sans-serif;cursor:pointer}
+.set-row b{font-size:11px;padding:3px 9px;border-radius:99px;background:rgba(255,255,255,.15)}
+.set-row b.on{background:#22c55e}
+.set-btn{display:block;width:100%;margin:8px 0 0;border:0;border-radius:12px;padding:12px;cursor:pointer;font:900 17px "Arial Black",system-ui,sans-serif;color:#fff}
+.set-btn.go{background:linear-gradient(180deg,#58e866,#1f9f36);box-shadow:0 4px 0 #0f5f1c}
+.set-btn.ghost{background:rgba(255,255,255,.1);font-size:14px}
+.set-x{position:absolute;top:8px;right:8px;width:32px;height:32px;border-radius:50%;border:0;background:rgba(255,255,255,.12);color:#fff;font-size:15px;cursor:pointer}
 /* Pergunta CONTINUAR? (vida extra) */
 #ask{position:fixed;inset:0;z-index:8;display:grid;place-items:center;background:rgba(3,8,22,.7)}
 .ask-box{min-width:min(320px,90vw);text-align:center;color:#fff;padding:22px 22px 18px;border-radius:18px;background:linear-gradient(180deg,#173870,#0b1d44);border:3px solid #ffc629;box-shadow:0 0 0 3px #7a4a1f,0 20px 50px rgba(0,0,0,.6)}
@@ -221,56 +217,54 @@ body.titling #side{display:none!important}
 #ask-no{background:rgba(255,255,255,.1);font-size:14px}
 @keyframes sdbump{40%{transform:scale(1.18)}}
 @keyframes sdhurt{20%,60%{transform:translateX(-5px)}40%,80%{transform:translateX(5px)}}
-@media (max-height:430px){#side{gap:6px;padding-top:max(9px,env(safe-area-inset-top));padding-bottom:9px}.sd-phase{padding:3px 8px}.sd-phase b{font-size:22px}.sd-card{padding:5px 8px}.sd-card .ico{width:30px;height:30px;font-size:17px}.sd-card b{font-size:19px}.sd-shop{padding:8px}}
-/* Tela estreita/retrato (celular): o painel vira uma barra roxa no topo */
-@media (max-aspect-ratio:5/4),(max-width:620px){
-  #side{right:0;bottom:auto;width:auto;height:var(--side-h);flex-direction:row;align-items:center;gap:8px;padding:6px 10px;padding-top:max(6px,env(safe-area-inset-top));
-    border-right:0;border-bottom:4px solid #ffcc3d;border-radius:0 0 20px 20px;box-shadow:inset 0 -3px 0 #fff2b0,0 5px 0 #2a0b6e,0 10px 24px rgba(0,0,0,.4)}
-  .sd-bar,.sd-level,.sd-powers,.sd-label{display:none}
-  .sd-phase{padding:2px 8px;border-width:2px}.sd-phase b{font-size:18px}.sd-phase::before{content:"FASE";font-size:9px;font-weight:900;color:#5a2a00;margin-right:2px}
-  .sd-card{padding:3px 8px;border-width:2px;gap:6px}.sd-card .ico{width:26px;height:26px;font-size:14px}.sd-card b{font-size:16px}
-  .sd-wallet{display:flex;gap:6px}
-  #sd-inv-wrap{flex:0 1 auto}.sd-inv{grid-template-columns:repeat(5,34px);gap:3px}.sd-it{font-size:14px}
-  .sd-shop{margin:0 0 0 auto;width:auto;padding:6px 12px;font-size:13px;border-width:2px}.sd-shop kbd{display:none}
-  body.has-side #game{left:0;top:var(--side-h)}
-  body.has-side #banner{left:0}body.has-side #gtoast,body.has-side #hint{left:50%}body.has-side #gtoast{top:calc(var(--side-h) + 10px)}
-  body.has-side #touch{left:0}
-}
+/* Telas baixas (celular deitado) e estreitas (retrato) */
+@media (max-height:430px){.tb-avatar{width:38px;height:38px}.tb-round{width:40px;height:40px;font-size:18px}.tb-name{font-size:14px}.tb-st{font-size:12px}.tb-st b{font-size:13px}.sd-it{width:40px;height:40px}.sd-powers{display:none}}
+@media (max-width:620px){#topbar{gap:4px}.tb-name{max-width:96px}.tb-bar,.sd-powers{display:none}.tb-phase{padding:2px 8px;letter-spacing:1px}.tb-round{width:38px;height:38px;font-size:17px}.tb-right{gap:5px}.tb-avatar{width:34px;height:34px}}
+body.mobile .sd-it i{display:none}
 #err{position:fixed;left:10px;right:10px;bottom:10px;background:#b00020;color:#fff;padding:8px 10px;border-radius:8px;font:12px monospace;z-index:9}
 [hidden]{display:none!important}
-#touch{display:none;position:fixed;left:0;right:0;bottom:0;padding:18px;padding-bottom:max(18px,env(safe-area-inset-bottom));justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:3}
+/* Controles de toque transparentes nos cantos inferiores (tela inteira, paisagem) */
+#touch{display:none;position:fixed;left:0;right:0;bottom:0;padding:16px;padding-bottom:max(16px,env(safe-area-inset-bottom));padding-left:max(18px,env(safe-area-inset-left));padding-right:max(18px,env(safe-area-inset-right));justify-content:space-between;align-items:flex-end;pointer-events:none;z-index:3}
 body.touch #touch{display:flex}
 body.touch #hint{display:none}
 /* Celular/tablet (Game.platform.mobile): sem dicas de teclado; botões de toque maiores em telas pequenas */
-body.mobile .sd-shop kbd,body.mobile #sd-inv-wrap .sd-label{display:none}
-body.mobile .sd-it i{display:none}
-@media (max-height:420px){body.touch .pad button{width:56px;height:56px}body.touch .pad button.big{width:74px;height:74px}}
+@media (max-height:420px){body.touch .pad button{width:58px;height:58px}body.touch .pad button.big{width:76px;height:76px}}
 body.pf-android,body.pf-ios{-webkit-touch-callout:none}
 .pad{pointer-events:auto;display:flex;gap:12px;align-items:flex-end}
-.pad.dpad{display:grid;grid-template-columns:repeat(3,62px);grid-template-rows:repeat(2,62px);gap:6px}
-.pad button{width:62px;height:62px;border-radius:50%;border:2px solid rgba(255,255,255,.55);background:rgba(255,255,255,.18);color:#fff;font-size:22px;touch-action:none;-webkit-tap-highlight-color:transparent;padding:0}
-.pad button.big{width:82px;height:82px;font-size:30px}
-.pad button.on{background:rgba(255,255,255,.5)}
+.pad.dpad{display:grid;grid-template-columns:repeat(3,66px);grid-template-rows:repeat(2,66px);gap:6px}
+.pad button{width:66px;height:66px;border-radius:50%;border:2px solid rgba(255,255,255,.42);background:rgba(255,255,255,.07);color:rgba(255,255,255,.92);font-size:24px;
+  touch-action:none;-webkit-tap-highlight-color:transparent;padding:0;text-shadow:0 1px 3px rgba(0,0,0,.55);
+  box-shadow:inset 0 0 18px rgba(255,255,255,.1),0 2px 10px rgba(0,0,0,.18);transition:transform .06s,background .06s}
+.pad button.big{width:86px;height:86px;font-size:32px}
+.pad button.on{background:rgba(255,255,255,.3);border-color:rgba(255,255,255,.9);transform:scale(.94)}
 </style>
 </head>
 <body>
-<div id="game"></div>
+<div id="game" style="background:radial-gradient(circle at 50% 35%,#388e3c,#a8e6a1 85%)"></div>
 <div id="hud"><span id="hud-score"></span><span id="hud-lives"></span></div>
 <div id="hint"></div>
 <div id="touch"><div class="pad row l"><button data-btn="left" class="b-left" aria-label="left">◀</button><button data-btn="down" class="b-down" aria-label="down">▼</button><button data-btn="right" class="b-right" aria-label="right">▶</button></div><div class="pad row r"><button data-btn="action" class="b-action big" aria-label="action">✹</button><button data-btn="jump" class="b-jump big" aria-label="jump">⬆</button></div></div>
-<aside id="side" hidden style="--accent:#fff59d;--sky-soft:#388e3c66">
-  <div class="sd-phase"><span class="sd-label">Fase</span><b id="sd-phase">1</b></div>
-  <div class="sd-bar" title="Progresso da fase"><i id="sd-progress"></i></div>
-  <div class="sd-wallet">
-    <div class="sd-card life"><span class="ico">❤️</span><div><span class="sd-label">Vidas</span><div id="sd-lives" class="sd-lives"></div></div></div>
-    <div class="sd-card"><span class="ico">💰</span><div><span class="sd-label">Moedas</span><b id="sd-coins">0</b></div></div>
-    <div class="sd-card gem"><span class="ico">💎</span><div><span class="sd-label">Gemas</span><b id="sd-gems">0</b></div></div>
+<header id="topbar" hidden>
+  <div class="tb-left">
+    <span class="tb-avatar"><img id="tb-avatar" alt="" hidden draggable="false"></span>
+    <div class="tb-who">
+      <div class="tb-namerow"><b id="tb-name" class="tb-name">ZAIROX</b><button id="tb-edit" class="tb-edit" aria-label="Editar nome do personagem" title="Editar nome">✏️</button></div>
+      <div class="tb-stats">
+        <span class="tb-st life" title="Vidas">❤️<b id="sd-lives" class="sd-lives">0</b></span>
+        <span class="tb-st" title="Moedas">💰<b id="sd-coins">0</b></span>
+        <span class="tb-st gem" title="Gemas">💎<b id="sd-gems">0</b></span>
+      </div>
+      <div id="sd-powers" class="sd-powers"></div>
+    </div>
   </div>
-  <div id="sd-level" class="sd-level"></div>
-  <div id="sd-powers" class="sd-powers"></div>
-  <div id="sd-inv-wrap" hidden><span class="sd-label">Inventário · teclas 1–5</span><div id="sd-inv" class="sd-inv"></div></div>
-  <button id="sd-shop" class="sd-shop">🛒 Loja <kbd>L</kbd></button>
-</aside>
+  <div class="tb-center"><span class="tb-phase">FASE <b id="sd-phase">1</b></span><div class="tb-bar" title="Progresso da fase"><i id="sd-progress"></i></div></div>
+  <div class="tb-right">
+    <button id="sd-shop" class="tb-round tb-shop" aria-label="Loja (L)" title="Loja (L)">🛒</button>
+    <button id="tb-gear" class="tb-round" aria-label="Pausa e configurações (Esc)" title="Pausa e configurações (Esc)">⚙️</button>
+  </div>
+  <div id="sd-level" class="sd-level" hidden></div>
+</header>
+<div id="sd-inv-wrap" hidden><div id="sd-inv" class="sd-inv"></div></div>
 <div id="ask" hidden><div class="ask-box"><h2 id="ask-title"></h2><p id="ask-text"></p><button id="ask-yes"></button><button id="ask-no"></button></div></div>
 <div id="gtoast"></div>
 <div id="banner" hidden><b id="banner-big"></b><span id="banner-small"></span></div>
@@ -440,7 +434,10 @@ var S = {"dimension":"2d","genre":"platformer","theme":"floresta","engine":"phas
   function release(k) { Input[k] = false; }
   var MODIFIER = /^(Shift|Control|Alt|Meta|Tab|CapsLock|F\d+)/;
 
+  // Digitando num campo (login, nome do personagem): as teclas são do texto, não do jogo
+  var typing = function (e) { var t = e.target; return !!(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)); };
   addEventListener('keydown', function (e) {
+    if (typing(e)) return;
     // Reinício instantâneo: qualquer tecla (sem ser repetição de tecla segurada) depois do fim de jogo
     if (window.Game.over && !window.Game.shopOpen && !e.repeat && !MODIFIER.test(e.key) && Date.now() - window.Game.endedAt > 350) {
       e.preventDefault();
@@ -452,7 +449,7 @@ var S = {"dimension":"2d","genre":"platformer","theme":"floresta","engine":"phas
     e.preventDefault();
     press(k);
   });
-  addEventListener('keyup', function (e) { var k = KEYMAP[e.code]; if (k) release(k); });
+  addEventListener('keyup', function (e) { if (typing(e)) return; var k = KEYMAP[e.code]; if (k) release(k); });
   addEventListener('blur', function () { Object.keys(KEYMAP).forEach(function (c) { release(KEYMAP[c]); }); });
 
   document.querySelectorAll('[data-btn]').forEach(function (b) {
@@ -486,6 +483,8 @@ var S = {"dimension":"2d","genre":"platformer","theme":"floresta","engine":"phas
   window.PLATFORM = PLATFORM;
   document.body.classList.add('pf-' + PLATFORM.kind, PLATFORM.mobile ? 'mobile' : 'desktop');
   if (PLATFORM.touch) document.body.classList.add('touch');
+  // Preenche a tela inteira em paisagem: a arte do cenário (desfocada) aparece nas sobras ao lado do jogo
+  if (window.ASSETS && window.ASSETS.capa) { var gameEl = document.getElementById('game'); if (gameEl) gameEl.style.setProperty('--fill', 'url(' + window.ASSETS.capa.src + ')'); }
 
   var scoreEl = document.getElementById('hud-score');
   var livesEl = document.getElementById('hud-lives');
@@ -499,16 +498,47 @@ var S = {"dimension":"2d","genre":"platformer","theme":"floresta","engine":"phas
     }
   };
 
-  // Painel lateral (ocupa a faixa que antes ficava preta ao lado do jogo)
-  var side = document.getElementById('side');
+  /*
+   * Barra superior transparente (substitui o painel lateral roxo). Mesma API de antes (Game.side):
+   *  esquerda = avatar + nome do personagem (✏️ editável, salvo no localStorage) + vidas/moedas/gemas
+   *  centro = fase atual · direita = loja (redondo) + engrenagem (pausa/configurações/áudio)
+   */
+  var side = document.getElementById('topbar');
   var sideLast = {};
-  var sideUse = null;
+  var sideUse = null, sideGear = null;
+  var NAME_KEY = 'forja:nome-personagem';
+  var nameDefault = 'ZAIROX';
+  function readName() { try { return localStorage.getItem(NAME_KEY) || nameDefault; } catch (e) { return nameDefault; } }
+  function paintName() { var el = document.getElementById('tb-name'); if (el) el.textContent = readName(); }
+  function editName() {
+    var el = document.getElementById('tb-name');
+    if (!el || el.querySelector('input')) return;
+    var input = document.createElement('input');
+    input.type = 'text'; input.maxLength = 16; input.value = readName(); input.className = 'tb-name-in';
+    input.setAttribute('aria-label', 'Nome do personagem');
+    el.textContent = ''; el.appendChild(input); input.focus(); input.select();
+    var done = false;
+    function save(keep) {
+      if (done) return; done = true;
+      var v = keep ? input.value.replace(/\s+/g, ' ').trim().slice(0, 16) : '';
+      try { if (keep) { if (v && v !== nameDefault) localStorage.setItem(NAME_KEY, v); else localStorage.removeItem(NAME_KEY); } } catch (e) { /* sem armazenamento */ }
+      paintName();
+      if (keep && window.Game) window.Game.toast('✏️ Nome salvo: ' + readName());
+    }
+    input.addEventListener('keydown', function (e) { if (e.key === 'Enter') { e.preventDefault(); save(true); } else if (e.key === 'Escape') { e.preventDefault(); save(false); } });
+    input.addEventListener('blur', function () { save(true); });
+  }
   var sideApi = {
     onUse: function (fn) { sideUse = fn; },
+    /** Engrenagem: pausa + configurações (o template abre o painel com Game.settings) */
+    onGear: function (fn) { sideGear = fn; },
     enable: function (onShop) {
-      document.body.classList.add('has-side');
+      document.body.classList.add('has-top');
       side.hidden = false;
       document.getElementById('sd-shop').onclick = function (e) { e.stopPropagation(); e.currentTarget.blur(); onShop(); };
+      document.getElementById('tb-gear').onclick = function (e) { e.stopPropagation(); e.currentTarget.blur(); if (sideGear) sideGear(); };
+      document.getElementById('tb-edit').onclick = function (e) { e.stopPropagation(); editName(); };
+      paintName();
     },
     set: function (o) {
       function put(id, key, val, fn) {
@@ -520,12 +550,12 @@ var S = {"dimension":"2d","genre":"platformer","theme":"floresta","engine":"phas
       if (o.phase != null) put('sd-phase', 'phase', o.phase, function (el, v) { el.textContent = v; });
       if (o.progress != null) put('sd-progress', 'progress', Math.round(o.progress * 100), function (el, v) { el.style.width = v + '%'; });
       if (o.lives != null) put('sd-lives', 'lives', o.lives, function (el, v, prev) {
-        el.innerHTML = '';
-        var shown = Math.min(v, 6);
-        for (var i = 0; i < shown; i++) { var h = document.createElement('span'); h.className = 'hp'; h.textContent = '❤'; el.appendChild(h); }
-        if (v > 6) { var more = document.createElement('span'); more.className = 'hp-more'; more.textContent = '+' + (v - 6); el.appendChild(more); }
+        el.textContent = v;
         if (prev != null && v < prev) { el.classList.remove('hurt'); void el.offsetWidth; el.classList.add('hurt'); }
       });
+      // Nome padrão do personagem (o jogador pode trocar no ✏️) e avatar do personagem equipado
+      if (o.name != null && o.name !== nameDefault) { nameDefault = o.name; paintName(); }
+      if (o.avatar != null) put('tb-avatar', 'avatar', o.avatar, function (el, v) { el.src = v; el.hidden = !v; });
       if (o.coins != null) put('sd-coins', 'coins', o.coins, function (el, v, prev) {
         el.textContent = Number(v).toLocaleString('pt-BR');
         if (prev != null && v > prev) { el.classList.remove('bump'); void el.offsetWidth; el.classList.add('bump'); }
@@ -632,7 +662,46 @@ var S = {"dimension":"2d","genre":"platformer","theme":"floresta","engine":"phas
     endedAt: 0,
     shopOpen: false,
     onRestart: null, // o template pode reiniciar sem recarregar a página
-    side: sideApi,   // painel lateral: Game.side.enable(onShop) / Game.side.set({...})
+    side: sideApi,   // barra superior: Game.side.enable(onShop) / Game.side.set({...}) / Game.side.onGear(fn)
+
+    /**
+     * Painel da engrenagem (pausa/configurações): { title, toggles: [{ label, get, set }],
+     * buttons: [{ label, kind: 'go'|'ghost', action }], onClose }. Fechar (✕, Esc ou fundo) chama onClose.
+     */
+    settings: function (o) {
+      var old = document.getElementById('settings'); if (old) old.remove();
+      var wrap = document.createElement('div'); wrap.id = 'settings';
+      var box = document.createElement('div'); box.className = 'set-box';
+      var h = document.createElement('h2'); h.textContent = o.title || '⚙️ Configurações'; box.appendChild(h);
+      var closed = false;
+      function close(fn) {
+        if (closed) return; closed = true;
+        removeEventListener('keydown', onKey, true);
+        wrap.remove();
+        if (typeof fn === 'function') fn(); else if (o.onClose) o.onClose();
+      }
+      (o.toggles || []).forEach(function (t) {
+        var row = document.createElement('button'); row.className = 'set-row';
+        var paint = function () { row.innerHTML = ''; var a = document.createElement('span'); a.textContent = t.label; var b = document.createElement('b'); b.className = t.get() ? 'on' : ''; b.textContent = t.get() ? 'LIGADO' : 'DESLIGADO'; row.appendChild(a); row.appendChild(b); };
+        paint();
+        row.onclick = function (e) { e.stopPropagation(); t.set(!t.get()); paint(); };
+        box.appendChild(row);
+      });
+      (o.buttons || []).forEach(function (bt) {
+        var b = document.createElement('button'); b.className = 'set-btn ' + (bt.kind || 'ghost'); b.textContent = bt.label;
+        b.onclick = function (e) { e.stopPropagation(); close(function () { if (bt.action) bt.action(); else if (o.onClose) o.onClose(); }); };
+        box.appendChild(b);
+      });
+      var x = document.createElement('button'); x.className = 'set-x'; x.setAttribute('aria-label', 'Fechar'); x.textContent = '✕';
+      x.onclick = function (e) { e.stopPropagation(); close(); };
+      box.appendChild(x);
+      wrap.appendChild(box);
+      wrap.onclick = function (e) { if (e.target === wrap) close(); };
+      function onKey(e) { if (e.key === 'Escape') { e.preventDefault(); e.stopPropagation(); close(); } }
+      addEventListener('keydown', onKey, true);
+      document.body.appendChild(wrap);
+      return { close: close };
+    },
 
     /** Mostra a tela inicial (logo) e só então inicia o jogo */
     boot: function (start) {
@@ -1265,6 +1334,103 @@ var S = {"dimension":"2d","genre":"platformer","theme":"floresta","engine":"phas
     verify(saved.key).then((r) => { if (r.ok) done(); else { write(null); screen(); } });
   } else screen();
 })(S, function () { // ativação por chave de licença antes da tela inicial
+(function accountGate(S, done) {
+  const KC = 'forja:contas', KS = 'forja:sessao';
+  const get = (k, d) => { try { return JSON.parse(localStorage.getItem(k) || 'null') || d; } catch (e) { return d; } };
+  const set = (k, v) => { try { if (v == null) localStorage.removeItem(k); else localStorage.setItem(k, JSON.stringify(v)); return true; } catch (e) { return false; } };
+  const contas = () => get(KC, {});
+  window.ForjaConta = {
+    atual: () => { const s = get(KS, null); return s && s.email ? s.email : null; },
+    sair: () => { set(KS, null); location.reload(); }
+  };
+  try { if (window.parent !== window && window.parent.location.origin === location.origin) { done(); return; } } catch (e) { /* outro site: segue */ }
+  const sess = get(KS, null);
+  if (sess && sess.email && contas()[sess.email]) { done(); return; } // já entrou neste aparelho: direto para o jogo
+
+  const hex = (buf) => Array.prototype.map.call(new Uint8Array(buf), (b) => ('0' + b.toString(16)).slice(-2)).join('');
+  async function hash(salt, senha) {
+    const txt = salt + ':' + senha;
+    if (window.crypto && crypto.subtle) return hex(await crypto.subtle.digest('SHA-256', new TextEncoder().encode(txt)));
+    let h = 2166136261; for (let i = 0; i < txt.length; i++) { h ^= txt.charCodeAt(i); h = Math.imul(h, 16777619) >>> 0; } // sem WebCrypto
+    return 'f' + h.toString(16);
+  }
+  const novoSalt = () => { const a = new Uint8Array(16); (window.crypto && crypto.getRandomValues ? crypto.getRandomValues(a) : a.forEach((_, i) => { a[i] = Math.random() * 256; })); return hex(a); };
+  const okEmail = (e) => /^[^\s@]+@[^\s@]+\.[^\s@]{2,}$/.test(e);
+
+  const box = document.createElement('div');
+  box.id = 'conta';
+  box.setAttribute('style', 'position:fixed;inset:0;z-index:2147483645;display:grid;place-items:center;padding:16px;overflow:auto;' +
+    'background:radial-gradient(circle at 50% 0%,rgba(255,230,0,.18),rgba(255,230,0,0) 45%),linear-gradient(180deg,#0e2a5c,#07122a);' +
+    'font-family:"Arial Rounded MT Bold","Trebuchet MS",system-ui,sans-serif;color:#fff');
+  const field = 'width:100%;box-sizing:border-box;margin:0 0 10px;padding:13px 14px;border-radius:12px;border:2px solid rgba(255,255,255,.25);background:rgba(0,0,0,.35);color:#fff;font:700 16px system-ui,sans-serif;outline:none;user-select:text;-webkit-user-select:text';
+  const tab = 'flex:1;padding:10px;border:0;border-radius:10px;font:900 15px system-ui,sans-serif;cursor:pointer;';
+  box.innerHTML =
+    '<form id="cf" style="width:min(400px,100%);background:rgba(12,24,56,.92);border:2px solid rgba(255,255,255,.18);border-radius:22px;padding:22px 20px 18px;box-shadow:0 20px 50px rgba(0,0,0,.5);text-align:center">' +
+    '<div style="font:900 40px \'Arial Black\',system-ui,sans-serif;letter-spacing:4px;color:#FFE600;text-shadow:0 4px 0 #b87400,0 0 22px rgba(255,220,0,.55)">ZAIROX</div>' +
+    '<p id="cs" style="margin:6px 0 16px;font:700 14px system-ui,sans-serif;opacity:.85">Crie sua conta para começar</p>' +
+    '<div style="display:flex;gap:6px;margin:0 0 14px;padding:4px;border-radius:13px;background:rgba(0,0,0,.3)">' +
+    '<button type="button" id="ct-reg" style="' + tab + '">Criar conta</button><button type="button" id="ct-log" style="' + tab + '">Entrar</button></div>' +
+    '<input id="ce" type="email" autocomplete="email" placeholder="Seu e-mail" style="' + field + '">' +
+    '<input id="cp" type="password" autocomplete="current-password" placeholder="Senha (mínimo 6 caracteres)" style="' + field + '">' +
+    '<input id="cp2" type="password" autocomplete="new-password" placeholder="Repita a senha" style="' + field + '">' +
+    '<p id="cm" style="min-height:1.2em;margin:2px 0 10px;font:700 13px system-ui,sans-serif;color:#ffb4b4"></p>' +
+    '<button id="cgo" type="submit" style="width:100%;padding:14px;border:0;border-radius:14px;cursor:pointer;font:900 20px \'Arial Black\',system-ui,sans-serif;color:#1a1200;' +
+    'background:linear-gradient(180deg,#fff7a8,#FFE600 25%,#FFB700);box-shadow:0 6px 0 #b87400,0 0 22px rgba(255,220,0,.45)">CRIAR CONTA</button>' +
+    '<button type="button" id="cfg" style="margin:14px 0 0;border:0;background:none;color:#bcd2ff;font:700 13px system-ui,sans-serif;cursor:pointer;text-decoration:underline">Esqueci minha senha</button>' +
+    '<p style="margin:12px 0 0;font:600 11px system-ui,sans-serif;opacity:.6">A conta fica salva só neste aparelho. Nas próximas vezes o jogo abre direto.</p>' +
+    '</form>';
+  document.body.appendChild(box);
+  const $ = (id) => box.querySelector('#' + id);
+  let modo = Object.keys(contas()).length ? 'log' : 'reg', reset = false;
+  function pintar() {
+    const reg = modo === 'reg';
+    $('ct-reg').style.background = reg ? '#FFE600' : 'transparent'; $('ct-reg').style.color = reg ? '#1a1200' : '#fff';
+    $('ct-log').style.background = reg ? 'transparent' : '#FFE600'; $('ct-log').style.color = reg ? '#fff' : '#1a1200';
+    $('cp2').style.display = reg ? '' : 'none';
+    $('cp').setAttribute('autocomplete', reg ? 'new-password' : 'current-password');
+    $('cgo').textContent = reg ? (reset ? 'SALVAR NOVA SENHA' : 'CRIAR CONTA') : 'ENTRAR';
+    $('cs').textContent = reg ? (reset ? 'Defina uma nova senha para este e-mail' : 'Crie sua conta para começar') : 'Entre com seu e-mail e senha';
+    $('cfg').style.display = reg ? 'none' : '';
+    $('cm').textContent = '';
+  }
+  $('ct-reg').onclick = () => { modo = 'reg'; reset = false; pintar(); $('ce').focus(); };
+  $('ct-log').onclick = () => { modo = 'log'; reset = false; pintar(); $('ce').focus(); };
+  $('cfg').onclick = () => {
+    // A conta é só deste aparelho: não há servidor para mandar código. Redefine a senha aqui mesmo (o progresso fica).
+    if (!confirm('A conta fica salva só neste aparelho. Quer definir uma nova senha para este e-mail? O progresso do jogo continua salvo.')) return;
+    modo = 'reg'; reset = true; pintar(); $('cp').focus();
+  };
+  const msg = (t) => { $('cm').textContent = t; };
+  function entrar(email) {
+    set(KS, { email, at: new Date().toISOString() });
+    box.remove();
+    done();
+  }
+  $('cf').onsubmit = async (e) => {
+    e.preventDefault();
+    const email = $('ce').value.trim().toLowerCase(), senha = $('cp').value, all = contas();
+    if (!okEmail(email)) return msg('Digite um e-mail válido.');
+    if (senha.length < 6) return msg('A senha precisa de pelo menos 6 caracteres.');
+    $('cgo').disabled = true;
+    try {
+      if (modo === 'reg') {
+        if (senha !== $('cp2').value) return msg('As senhas não são iguais.');
+        if (all[email] && !reset) { modo = 'log'; pintar(); $('ce').value = email; return msg('Este e-mail já tem conta neste aparelho. Entre com a senha.'); }
+        const salt = novoSalt();
+        all[email] = { salt, hash: await hash(salt, senha), criado: (all[email] && all[email].criado) || new Date().toISOString() };
+        if (!set(KC, all)) return msg('Não foi possível salvar a conta neste aparelho (armazenamento bloqueado).');
+        entrar(email);
+      } else {
+        const c = all[email];
+        if (!c) { return msg('Não há conta com este e-mail neste aparelho. Toque em "Criar conta".'); }
+        if (await hash(c.salt, senha) !== c.hash) return msg('Senha incorreta.');
+        entrar(email);
+      }
+    } finally { if ($('cgo')) $('cgo').disabled = false; }
+  };
+  pintar();
+  setTimeout(() => { try { $('ce').focus(); } catch (e) { /* ignore */ } }, 50);
+})(S, function () { // cadastro/login por e-mail na 1ª abertura (depois entra direto)
 Game.boot(function () {
 (function platformer2D(S) {
   const W = 960, H = 540, P = S.palette;
@@ -1323,7 +1489,7 @@ Game.boot(function () {
     },
 
     heroes: {
-      heroi: { name: 'Herói', desc: 'O garoto da jaqueta vermelha', art: 'heroi', card: 'card_heroi', perk: {}, rarity: 'comum', cur: 'gems' },
+      heroi: { name: 'ZAIROX', desc: 'O garoto da jaqueta vermelha', art: 'heroi', card: 'card_heroi', perk: {}, rarity: 'comum', cur: 'gems' },
       ninja: { name: 'Ninja', desc: '+10% de velocidade por 12s a cada fase', art: 'ninja', card: 'card_ninja', perk: { speed: 1.1 }, rarity: 'raro', cur: 'gems' },
       aventureira: { name: 'Aventureira', desc: '+1 pulo no ar por 12s a cada fase', art: 'aventureira', card: 'card_aventureira', perk: { air: 1 }, rarity: 'epico', cur: 'gems' },
       robo: { name: 'Robô', desc: '+1 vida em toda partida', art: 'robo', card: 'card_robo', perk: { life: 1 }, rarity: 'lendario', cur: 'gems' }
@@ -1550,6 +1716,8 @@ Game.boot(function () {
   const INV = ['shield', 'magnet', 'star', 'wings', 'boots'];
   // Tecla 5 = Botas de pulo (as teclas 1–4 vêm do runtime)
   addEventListener('keydown', (ev) => {
+    const t = ev.target;
+    if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA')) return; // digitando o nome/login
     if (!ev.repeat && (ev.code === 'Digit5' || ev.code === 'Numpad5') && typeof useItem === 'function') useItem('boots');
   });
 
@@ -1613,6 +1781,8 @@ Game.boot(function () {
     if (save.stock.air) powers.push({ icon: '🆘', label: '×' + save.stock.air });
     if (save.stock.life) powers.push({ icon: '❤️', label: 'extra ×' + save.stock.life });
     Game.side.set({
+      name: HEROES.heroi.name, // nome padrão do personagem (ZAIROX); o jogador troca no ✏️ da barra
+      avatar: avatarSrc(),
       phase,
       progress: player && worldW ? Math.min(1, Math.max(0, player.x / (worldW - 200))) : 0,
       lives,
@@ -1660,6 +1830,42 @@ Game.boot(function () {
     }));
   }
   Game.side.enable(openPauseShop);
+
+  // Engrenagem ⚙️ (ou Esc): pausa a fase e os tempos dos poderes; mostra áudio, loja e conta
+  function openSettings() {
+    if (!s || Game.over || cleared || Game.shopOpen || asking || !s.scene.isActive() || document.getElementById('settings')) return;
+    s.scene.pause();
+    const pausedAt = now();
+    const resume = () => {
+      const paused = now() - pausedAt;
+      POWER_KEYS.forEach((k) => { if (pw[k] > pausedAt) pw[k] += paused; }); // pausa congela os temporizadores
+      if (invUntil > pausedAt) invUntil += paused;
+      Input._edge = {};
+      s.scene.resume();
+      hud();
+    };
+    const conta = window.ForjaConta && window.ForjaConta.atual();
+    Game.settings({
+      title: '⏸ Pausado',
+      toggles: [
+        { label: '🎵 Música', get: () => !!save.audio.music, set: (v) => Sound.setMusic(v) },
+        { label: '🔊 Efeitos sonoros', get: () => !!save.audio.sfx, set: (v) => Sound.setSfx(v) }
+      ],
+      buttons: [
+        { label: '▶ Continuar', kind: 'go', action: resume },
+        { label: '🛒 Abrir a loja', action: () => { resume(); openPauseShop(); } },
+        ...(conta ? [{ label: '🚪 Sair da conta (' + conta + ')', action: () => {
+          if (confirm('Sair da conta ' + conta + '? O progresso continua salvo neste aparelho.')) window.ForjaConta.sair(); else resume();
+        } }] : [])
+      ],
+      onClose: resume
+    });
+  }
+  Game.side.onGear(openSettings);
+  addEventListener('keydown', (ev) => {
+    const t = ev.target;
+    if (ev.code === 'Escape' && !ev.repeat && !(t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA'))) openSettings();
+  });
   Game.onWallet = () => hud(); // gemas compradas em outra aba (Stripe) aparecem na hora
   function addBank(n) { save.coins += n; track('coins', n); save.save(); }
   function addGems(n) { save.gems += n; save.save(); }
@@ -1853,6 +2059,18 @@ Game.boot(function () {
   function outfitArt(id) {
     if (!IMG.heroi) return null;
     return outfitCanvas[id] || (outfitCanvas[id] = recolor(IMG.heroi, OUTFITS[id]));
+  }
+  // Avatar da barra superior: personagem equipado (com a cor da roupa). Gerado 1 vez por combinação.
+  function avatarSrc() {
+    const avatarCache = avatarSrc.cache || (avatarSrc.cache = {}); // na própria função: vale mesmo se o hud rodar antes
+    const k = save.hero + '|' + (save.hero === 'heroi' ? save.outfit : '');
+    if (avatarCache[k] !== undefined) return avatarCache[k];
+    let url = null;
+    try {
+      const cv = save.hero === 'heroi' && save.outfit !== 'vermelho' ? outfitArt(save.outfit) : null;
+      url = cv ? cv.toDataURL('image/png') : src(HEROES[save.hero].art || save.hero);
+    } catch (e) { url = null; }
+    return (avatarCache[k] = url || '');
   }
   const heroKey = () => (save.hero === 'heroi' && save.outfit !== 'vermelho' && s.textures.exists('roupa-' + save.outfit)
     ? 'roupa-' + save.outfit : 'a-' + (HEROES[save.hero].art || save.hero));
@@ -2211,7 +2429,7 @@ Game.boot(function () {
     return Object.keys(OUTFITS).map((id) => {
       const o = OUTFITS[id], cv = outfitArt(id);
       return permItem(econDef('outfits', id), {
-        img: cv ? cv.toDataURL('image/png') : null, fit: 'contain', icon: '🧥', name: o.name, desc: 'Roupa do Herói', skill: 'Visual exclusivo do Herói',
+        img: cv ? cv.toDataURL('image/png') : null, fit: 'contain', icon: '🧥', name: o.name, desc: 'Roupa do ZAIROX', skill: 'Visual exclusivo do ZAIROX',
         state: () => (save.hero === 'heroi' && save.outfit === id ? 'equipped' : owns(id, 'outfits') ? 'owned' : null),
         apply: () => { save.owned[id] = 1; equipOutfit(id); },
         equip: () => equipOutfit(id)
@@ -2886,25 +3104,7 @@ Game.boot(function () {
 
     // Objetivos (curto, médio e longo prazo) e missões ficam só na aba Temporada da loja/pausa — a tela do jogo fica limpa
     objText = null;
-    // Dois botões sutis de áudio no canto superior esquerdo: 🎵 música (BGM) e 🔊 efeitos (SFX)
-    const audioBtn = (bx, on, offIcon, onIcon, toggle, label) => {
-      const b = s.add.text(bx, 8, '', {
-        fontFamily: '"Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif', fontSize: '16px',
-        backgroundColor: 'rgba(7,18,42,0.45)', padding: { x: 6, y: 4 }
-      }).setScrollFactor(0).setDepth(25).setInteractive({ useHandCursor: true });
-      const paint = (v) => { b.setText(v ? onIcon : offIcon); b.setAlpha(v ? 0.75 : 0.45); };
-      paint(on());
-      b.on('pointerover', () => b.setAlpha(1));
-      b.on('pointerout', () => paint(on()));
-      b.on('pointerdown', (p, lx, ly, ev) => {
-        if (ev && ev.stopPropagation) ev.stopPropagation();
-        toggle(!on()); paint(on()); b.setAlpha(1);
-        Game.toast(label + (on() ? ' ligado' : ' desligado'));
-      });
-      return b;
-    };
-    audioBtn(8, () => !!save.audio.music, '🔕', '🎵', (v) => Sound.setMusic(v), '🎵 Música');
-    audioBtn(46, () => !!save.audio.sfx, '🔇', '🔊', (v) => Sound.setSfx(v), '🔊 Efeitos');
+    // Áudio (🎵 música / 🔊 efeitos) fica no painel da engrenagem ⚙️ da barra superior (openSettings)
 
     // Contador + barra de tempo de cada poder ativo (10s a 15s), esvaziando até sumir
     powerBars = s.add.graphics().setScrollFactor(0).setDepth(21);
@@ -2956,10 +3156,10 @@ Game.boot(function () {
         if (!k) { tx.setVisible(false); return; }
         const left = Math.max(0, pw[k] - t), frac = Math.min(1, left / (pwMax[k] || left || 1));
         const x = x0 + i * SLOT, ending = left < 3000, blink = ending && Math.floor(time / 120) % 2;
-        tx.setVisible(true).setPosition(x, 54).setText(POWERS[k].icon + ' ' + (left / 1000).toFixed(1) + 's').setColor(blink ? '#ff6b6b' : '#ffffff');
-        powerBars.fillStyle(0x07122a, 0.75).fillRoundedRect(x - BW / 2 - 2, 82, BW + 4, BH + 4, 6);
+        tx.setVisible(true).setPosition(x, 74).setText(POWERS[k].icon + ' ' + (left / 1000).toFixed(1) + 's').setColor(blink ? '#ff6b6b' : '#ffffff');
+        powerBars.fillStyle(0x07122a, 0.75).fillRoundedRect(x - BW / 2 - 2, 102, BW + 4, BH + 4, 6); // abaixo da barra superior
         const bw = Math.max(2, BW * frac);
-        if (frac > 0) powerBars.fillStyle(ending ? 0xff5252 : c(POWERS[k].color), 1).fillRoundedRect(x - BW / 2, 84, bw, BH, Math.min(4, bw / 2));
+        if (frac > 0) powerBars.fillStyle(ending ? 0xff5252 : c(POWERS[k].color), 1).fillRoundedRect(x - BW / 2, 104, bw, BH, Math.min(4, bw / 2));
       });
     }
 
@@ -3458,6 +3658,7 @@ Game.boot(function () {
     scene: { key: 'main', create, update }
   }));
 })(S);
+});
 });
 });
 </script>
